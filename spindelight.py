@@ -58,56 +58,47 @@ class SpinDelight(Frame):
         self.txt2.delete(0.0, END)
         if len(txt):
             try:
-                words = sub(r'[^a-z .,\']+', ' ', txt.lower()).split()
-                z = [(words[j-1], words[j]) for j in range(1,len(words))]
-                key = list(set(z))
-                values = self.generate_dict(words,key)
-                string = self.generate_sent(key,values)
+                words = sub(r'([.,?])+', r' \1 ', sub(r'[^a-zA-Z0-9 .,?]+', ' ', txt)).split()
+                w1 = words[0]
+                z = [(words[j - 1], words[j]) for j in range(1, len(words))]
+                values = self.generate_dict(z, w1)
+                string = self.generate_sent(values)
                 if len(string):
-                    self.txt2.insert(INSERT,string)
+                    self.txt2.insert(INSERT, string)
                 else:
                     showerror("Error", "Insufficient data to spin !!")
-            except:
-                showerror("Error", "Nothing to spin !!")
+            except BaseException as e:
+                showerror("Error", "Nothing to spin !!" + e)
+
                     
-    def generate_dict(self,x,key):
-        values = {}
-        w1 = '\n'
-        w2 = '\n'
-        values[(w1,w2)] = x[0]
-        for (wa,wb) in key:
-            values[(wa,wb)] = [x[i+2] for i in range(len(x) - 2) if wa == x[i] and wb == x[i+1]]
-        values[(wa,wb)] = ['\n']
+    def generate_dict(self, x, w1):
+        values = {'.': [w1]}
+        for (wa, wb) in x:
+            if wa in values:
+                values[wa].append(wb)
+            else:
+                values[wa] = [wb]
         return values
 
-    def generate_sent(self,key,values):
-        string = []
-        w1 = '\n'
-        w2 = '\n'
-        strng = []
-        lst1 = values[(w1,w2)]
-        word = lst1.split()
-        w1 = ''.join(str(c) for c in lst1)
-        search = [v for (i,v) in key if i == lst1]
-        lst2 = choice(search)
-        w2 = ''.join(str(c) for c in lst2)
-        strng.append(w1)
-        strng.append(w2)
-        while len(strng) < 100:
-            lst = values[(w1,w2)]
-            if len(lst) != 0:
-                wrd = choice(lst)
+
+    def generate_sent(self, values):
+        w1 = '.'
+        w2 = choice(values[w1])
+        string = w2
+        values[w1].remove(w2)
+        while values:
+            w1 = w2
+            if len(values[w1]):
+                w2 = choice(values[w1])
             else:
+                del values[w1]
+                w1 = '.'
                 break
-            word = ''.join(str(c) for c in wrd)
-            if word != '\n':
-                strng.append(word)
-                w1,w2 = w2,word
+            if w2 in ('.', ',', '?'):
+                string += w2
             else:
-                break
-        string = ' '.join(str(c) for c in strng) + '.'
-        rtn = split('([.!?] *)', string)
-        string = ''.join([each.capitalize() for each in rtn])
+                string += " " + w2
+            values[w1].remove(w2)
         return string
 
 
