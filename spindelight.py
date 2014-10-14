@@ -67,8 +67,8 @@ class SpinDelight(Frame):
                     self.txt2.insert(INSERT, string)
                 else:
                     showerror("Error", "Insufficient data to spin !!")
-            except BaseException as e:
-                showerror("Error", "Nothing to spin !!" + e)
+            except:
+                showerror("Error", "Nothing to spin !!")
 
                     
     def generate_dict(self, x, w1):
